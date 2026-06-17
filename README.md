@@ -63,9 +63,29 @@ Do not start by rewriting the application. First assess, document, and validate 
 1. Open `SchoolManagement.sln` in Visual Studio.
 2. Restore NuGet packages.
 3. Confirm LocalDB is available.
-4. Review `SchoolManagement/Web.config` connection strings.
-5. Build the solution before making modernization changes.
-6. Run the application locally and verify the main user workflows.
+4. Create the local database by running the SQL bootstrap script:
+
+   ```powershell
+   sqlcmd -S "(localdb)\MSSQLLocalDB" -i database/create-schoolmanagement-db.sql
+   ```
+
+5. Review `SchoolManagement/Web.config` connection strings and confirm they point to `SchoolManagement_DB`.
+6. Build the solution before making modernization changes.
+7. Run the application locally and verify the main user workflows.
+8. Register a user through the application registration workflow.
+
+## Database setup resource
+
+The `database/` folder contains an idempotent SQL Server bootstrap script that creates the `SchoolManagement_DB` database expected by the inherited application.
+
+The script creates:
+
+- ASP.NET Identity 2 tables used by `ApplicationDbContext`
+- EF6 Database First school-management tables used by `SchoolManagement_DBEntities`
+- baseline roles: Admin, Teacher, Supervisor
+- sample courses, students, lecturers, and enrollments
+
+The script does not seed default users. Users should be created through the application registration workflow so ASP.NET Identity generates password hashes correctly.
 
 ## Baseline review documents
 
