@@ -6,11 +6,11 @@ Use this checklist before any modernization work begins. The goal is to establis
 
 | Check | Evidence | Status |
 |---|---|---|
-| Confirm the solution opens successfully | `SchoolManagement.sln` | Not started |
-| Confirm project file format | `SchoolManagement/SchoolManagement.csproj` | Not started |
-| Confirm target framework | `.NET Framework 4.6.1` currently | Not started |
-| Confirm package management format | `packages.config` | Not started |
-| Confirm build configurations | Debug and Release | Not started |
+| Confirm the solution opens successfully | `SchoolManagement.sln` | Done |
+| Confirm project file format | `SchoolManagement/SchoolManagement.csproj` | Done |
+| Confirm target framework | `.NET Framework 4.6.1` currently | Done - Updated to `.NET Framework 4.8` |
+| Confirm package management format | `packages.config` | Done |
+| Confirm build configurations | Debug and Release | Done |
 
 ## Application startup
 
