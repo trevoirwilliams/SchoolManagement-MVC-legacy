@@ -12,17 +12,20 @@ namespace SchoolManagement.Tests.Integration
     [TestClass]
     public class StudentsControllerIntegrationTests
     {
+        private TestDataFactory _testData;
+
         [TestInitialize]
         public void Initialize()
         {
             LegacyTestDatabase.EnsureCreated();
-            LegacyTestDatabase.ClearGeneratedTestData();
+            _testData = new TestDataFactory();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            LegacyTestDatabase.ClearGeneratedTestData();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestMethod]
@@ -87,7 +90,7 @@ namespace SchoolManagement.Tests.Integration
         public async Task Students_Create_WhenModelStateIsValid_AddsStudentAndRedirectsToIndex_CurrentBaseline()
         {
             // Arrange
-            var token = TestDataFactory.NewToken();
+            var token = _testData.NewToken();
 
             var student = new Student
             {

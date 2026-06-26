@@ -11,7 +11,6 @@ namespace SchoolManagement.Tests.Infrastructure
         public const string TestDatabaseName = "SchoolManagement_Test";
         private const string SourceDatabaseName = "SchoolManagement_DB";
         private const string LocalDbServer = @"(LocalDb)\MSSQLLocalDB";
-        private const string TestDataPrefix = "AI Test";
 
         private static readonly object SyncRoot = new object();
         private static bool _isCreated;
@@ -50,9 +49,14 @@ namespace SchoolManagement.Tests.Infrastructure
             }
         }
 
-        public static void ClearGeneratedTestData()
+        public static void ClearGeneratedTestData(string testPrefix)
         {
             EnsureCreated();
+
+            if (string.IsNullOrWhiteSpace(testPrefix))
+            {
+                throw new ArgumentException("A test-specific prefix is required for cleanup.", nameof(testPrefix));
+            }
 
             const string sql = @"
 DELETE e
@@ -74,7 +78,7 @@ WHERE [First Name] LIKE @Prefix
 
             ExecuteNonQueryOnTestDatabase(sql, command =>
             {
-                command.Parameters.AddWithValue("@Prefix", TestDataPrefix + "%");
+                command.Parameters.AddWithValue("@Prefix", testPrefix + "%");
             });
         }
 

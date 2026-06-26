@@ -12,17 +12,20 @@ namespace SchoolManagement.Tests.Integration
     [TestClass]
     public class EnrollmentsControllerIntegrationTests
     {
+        private TestDataFactory _testData;
+
         [TestInitialize]
         public void Initialize()
         {
             LegacyTestDatabase.EnsureCreated();
-            LegacyTestDatabase.ClearGeneratedTestData();
+            _testData = new TestDataFactory();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            LegacyTestDatabase.ClearGeneratedTestData();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestMethod]
@@ -33,11 +36,11 @@ namespace SchoolManagement.Tests.Integration
 
             using (var context = new SchoolManagement_DBEntities())
             {
-                var token = TestDataFactory.NewToken();
-                var course = TestDataFactory.AddCourse(context, token);
-                var student = TestDataFactory.AddStudent(context, token);
-                var lecturer = TestDataFactory.AddLecturer(context, token);
-                var enrollment = TestDataFactory.AddEnrollment(context, course, student, lecturer);
+                var token = _testData.NewToken();
+                var course = _testData.AddCourse(context, token);
+                var student = _testData.AddStudent(context, token);
+                var lecturer = _testData.AddLecturer(context, token);
+                var enrollment = _testData.AddEnrollment(context, course, student, lecturer);
 
                 enrollmentId = enrollment.EnrollmentID;
             }
@@ -70,15 +73,15 @@ namespace SchoolManagement.Tests.Integration
 
             using (var context = new SchoolManagement_DBEntities())
             {
-                var firstToken = TestDataFactory.NewToken();
-                var expectedCourse = TestDataFactory.AddCourse(context, firstToken);
-                var expectedStudent = TestDataFactory.AddStudent(context, firstToken);
-                var expectedEnrollment = TestDataFactory.AddEnrollment(context, expectedCourse, expectedStudent);
+                var firstToken = _testData.NewToken();
+                var expectedCourse = _testData.AddCourse(context, firstToken);
+                var expectedStudent = _testData.AddStudent(context, firstToken);
+                var expectedEnrollment = _testData.AddEnrollment(context, expectedCourse, expectedStudent);
 
-                var secondToken = TestDataFactory.NewToken();
-                var otherCourse = TestDataFactory.AddCourse(context, secondToken);
-                var otherStudent = TestDataFactory.AddStudent(context, secondToken);
-                TestDataFactory.AddEnrollment(context, otherCourse, otherStudent);
+                var secondToken = _testData.NewToken();
+                var otherCourse = _testData.AddCourse(context, secondToken);
+                var otherStudent = _testData.AddStudent(context, secondToken);
+                _testData.AddEnrollment(context, otherCourse, otherStudent);
 
                 expectedCourseId = expectedCourse.CourseId;
                 expectedEnrollmentId = expectedEnrollment.EnrollmentID;

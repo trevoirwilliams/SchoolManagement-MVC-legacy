@@ -3,20 +3,37 @@ using SchoolManagement.Models;
 
 namespace SchoolManagement.Tests.Infrastructure
 {
-    public static class TestDataFactory
+    public sealed class TestDataFactory
     {
-        public static string NewToken()
+        public TestDataFactory()
+            : this("AI Test " + Guid.NewGuid().ToString("N").Substring(0, 8))
+        {
+        }
+
+        public TestDataFactory(string testPrefix)
+        {
+            if (string.IsNullOrWhiteSpace(testPrefix))
+            {
+                throw new ArgumentException("A test data prefix is required.", nameof(testPrefix));
+            }
+
+            TestPrefix = testPrefix;
+        }
+
+        public string TestPrefix { get; }
+
+        public string NewToken()
         {
             return Guid.NewGuid().ToString("N").Substring(0, 8);
         }
 
-        public static Course AddCourse(SchoolManagement_DBEntities context, string token = null)
+        public Course AddCourse(SchoolManagement_DBEntities context, string token = null)
         {
             token = token ?? NewToken();
 
             var course = new Course
             {
-                Title = $"AI Test Course {token}",
+                Title = $"{TestPrefix} Course {token}",
                 Credits = 3
             };
 
@@ -26,14 +43,14 @@ namespace SchoolManagement.Tests.Infrastructure
             return course;
         }
 
-        public static Student AddStudent(SchoolManagement_DBEntities context, string token = null)
+        public Student AddStudent(SchoolManagement_DBEntities context, string token = null)
         {
             token = token ?? NewToken();
 
             var student = new Student
             {
-                FirstName = $"AI Test First {token}",
-                LastName = $"AI Test Last {token}",
+                FirstName = $"{TestPrefix} First {token}",
+                LastName = $"{TestPrefix} Last {token}",
                 MiddleName = "Middle",
                 EnrollmentDate = new DateTime(2024, 9, 1)
             };
@@ -44,14 +61,14 @@ namespace SchoolManagement.Tests.Infrastructure
             return student;
         }
 
-        public static Lecturer AddLecturer(SchoolManagement_DBEntities context, string token = null)
+        public Lecturer AddLecturer(SchoolManagement_DBEntities context, string token = null)
         {
             token = token ?? NewToken();
 
             var lecturer = new Lecturer
             {
-                First_Name = $"AI Test Lecturer {token}",
-                Last_Name = $"AI Test Faculty {token}"
+                First_Name = $"{TestPrefix} Lecturer {token}",
+                Last_Name = $"{TestPrefix} Faculty {token}"
             };
 
             context.Lecturers.Add(lecturer);
@@ -60,12 +77,37 @@ namespace SchoolManagement.Tests.Infrastructure
             return lecturer;
         }
 
-        public static Enrollment AddEnrollment(
+        public Enrollment AddEnrollment(
             SchoolManagement_DBEntities context,
             Course course,
             Student student,
             Lecturer lecturer = null)
         {
+            if (course == null)
+            {
+                throw new ArgumentNullException(nameof(course));
+            }
+
+            if (student == null)
+            {
+                throw new ArgumentNullException(nameof(student));
+            }
+
+            if (course.CourseId <= 0)
+            {
+                throw new InvalidOperationException("The course must be saved before creating an enrollment.");
+            }
+
+            if (student.StudentID <= 0)
+            {
+                throw new InvalidOperationException("The student must be saved before creating an enrollment.");
+            }
+
+            if (lecturer != null && lecturer.Id <= 0)
+            {
+                throw new InvalidOperationException("The lecturer must be saved before creating an enrollment.");
+            }
+
             var enrollment = new Enrollment
             {
                 CourseID = course.CourseId,

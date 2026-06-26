@@ -11,17 +11,20 @@ namespace SchoolManagement.Tests.Integration
     [TestClass]
     public class EnrollmentsJsonEndpointTests
     {
+        private TestDataFactory _testData;
+
         [TestInitialize]
         public void Initialize()
         {
             LegacyTestDatabase.EnsureCreated();
-            LegacyTestDatabase.ClearGeneratedTestData();
+            _testData = new TestDataFactory();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            LegacyTestDatabase.ClearGeneratedTestData();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestMethod]
@@ -33,9 +36,9 @@ namespace SchoolManagement.Tests.Integration
 
             using (var context = new SchoolManagement_DBEntities())
             {
-                var token = TestDataFactory.NewToken();
-                var course = TestDataFactory.AddCourse(context, token);
-                var student = TestDataFactory.AddStudent(context, token);
+                var token = _testData.NewToken();
+                var course = _testData.AddCourse(context, token);
+                var student = _testData.AddStudent(context, token);
 
                 courseId = course.CourseId;
                 studentId = student.StudentID;
@@ -76,10 +79,10 @@ namespace SchoolManagement.Tests.Integration
 
             using (var context = new SchoolManagement_DBEntities())
             {
-                var token = TestDataFactory.NewToken();
-                var course = TestDataFactory.AddCourse(context, token);
-                var student = TestDataFactory.AddStudent(context, token);
-                TestDataFactory.AddEnrollment(context, course, student);
+                var token = _testData.NewToken();
+                var course = _testData.AddCourse(context, token);
+                var student = _testData.AddStudent(context, token);
+                _testData.AddEnrollment(context, course, student);
 
                 courseId = course.CourseId;
                 studentId = student.StudentID;
@@ -112,8 +115,8 @@ namespace SchoolManagement.Tests.Integration
 
             using (var context = new SchoolManagement_DBEntities())
             {
-                var token = TestDataFactory.NewToken();
-                var student = TestDataFactory.AddStudent(context, token);
+                var token = _testData.NewToken();
+                var student = _testData.AddStudent(context, token);
 
                 expectedStudentId = student.StudentID;
                 expectedName = student.FirstName + " " + student.LastName;

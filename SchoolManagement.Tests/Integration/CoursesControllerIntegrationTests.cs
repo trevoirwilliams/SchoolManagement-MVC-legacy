@@ -11,17 +11,20 @@ namespace SchoolManagement.Tests.Integration
     [TestClass]
     public class CoursesControllerIntegrationTests
     {
+        private TestDataFactory _testData;
+
         [TestInitialize]
         public void Initialize()
         {
             LegacyTestDatabase.EnsureCreated();
-            LegacyTestDatabase.ClearGeneratedTestData();
+            _testData = new TestDataFactory();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            LegacyTestDatabase.ClearGeneratedTestData();
+            LegacyTestDatabase.ClearGeneratedTestData(_testData.TestPrefix);
         }
 
         [TestMethod]
@@ -85,7 +88,7 @@ namespace SchoolManagement.Tests.Integration
         public void Courses_Create_WhenModelStateIsValid_AddsCourseAndRedirectsToIndex_CurrentBaseline()
         {
             // Arrange
-            var token = TestDataFactory.NewToken();
+            var token = _testData.NewToken();
 
             var course = new Course
             {
