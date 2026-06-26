@@ -138,5 +138,77 @@ After creating the files:
    * any manual steps required if the assistant cannot create or run the legacy .NET Framework test project automatically.
 
 
-## Prompt 4 - Generate the Remaining Tests
+## Prompt 4 - Generate the Infrastructure and Integration Tests
 
+You are continuing the test baseline for the inherited SchoolManagement MVC legacy application.
+
+Repository state:
+- Application: SchoolManagement MVC legacy app
+- Current platform: ASP.NET MVC 5 on .NET Framework 4.8
+- Modernization target direction: ASP.NET Core MVC on .NET 10
+- Existing test project: SchoolManagement.Tests
+- The tests for the issues categorized as "implement now" from docs/ai-generated-test-ideas.md should already exist and pass.
+
+Goal:
+Generate the remaining executable tests from docs/ai-generated-test-ideas.md that were previously deferred until test infrastructure existed.
+
+Important:
+- Do not modify production code.
+- Do not refactor controllers, models, views, Startup.cs, Web.config, or generated EF files.
+- Do not change current application behavior.
+- Do not use ASP.NET Core MVC namespaces.
+- Use System.Web.Mvc, Entity Framework 6, ASP.NET Identity 2, and MSTest.
+- Keep the test project targeting .NET Framework 4.8.
+- Use current baseline behavior only.
+- Risky inherited behavior must be named with CurrentBaselineRisk.
+- Do not create Playwright, Selenium, browser, or full end-to-end tests in this pass.
+- Do not implement external login provider tests.
+- Do not implement password reset email delivery tests.
+- Do not implement full Razor rendering tests unless they can be done safely without browser/runtime hosting.
+- Prefer integration-style tests that run against a dedicated LocalDB test database.
+- Never run tests against the developer’s normal SchoolManagement_DB database unless explicitly instructed.
+
+Database/testing infrastructure requirements:
+1. Configure the test project to use a dedicated LocalDB database named SchoolManagement_Test.
+2. Use the same metadata/resource format as the application’s Entity Framework connection string, but point the provider connection string to SchoolManagement_Test.
+3. Add a LegacyTestDatabase helper that:
+   - verifies LocalDB is available,
+   - creates SchoolManagement_Test if missing,
+   - executes the database/create-schoolmanagement-db.sql script against the test database,
+   - does not permanently alter database/create-schoolmanagement-db.sql,
+   - safely replaces the database name from SchoolManagement_DB to SchoolManagement_Test when executing the script,
+   - supports GO batch separators,
+   - clears only test-created records when needed,
+   - provides clear failure messages if SQL Server LocalDB or sqlcmd/database setup is missing.
+4. Keep tests deterministic. Do not depend on random existing developer data.
+5. Use unique test names or unique test data prefixes such as "AI Test Course", "AI Test Student", and "AI Test Enrollment".
+6. Avoid test parallelization for database-backed tests.
+
+Coding standards:
+- MSTest only.
+- Use clear Arrange / Act / Assert comments.
+- Keep helper methods small and explicit.
+- Add assertion messages that explain baseline-risk behavior.
+- Avoid broad tests that verify too many behaviors at once.
+- Avoid Thread.Sleep, real external services, browser automation, or production database dependencies.
+- Do not introduce mocking frameworks unless strictly necessary.
+- Do not use dynamic if reflection is clearer and safer for JsonResult.Data.
+- Use async Task test methods for async controller actions.
+
+After implementation:
+1. Build the solution.
+2. Run the full test suite.
+3. Report:
+   - files created,
+   - tests added,
+   - database setup assumptions,
+   - commands run,
+   - build result,
+   - test result,
+   - any tests intentionally deferred and why.
+
+Expected validation commands:
+
+nuget restore .\SchoolManagement.sln
+msbuild .\SchoolManagement.sln /p:Configuration=Debug /m
+vstest.console.exe .\SchoolManagement.Tests\bin\Debug\SchoolManagement.Tests.dll
