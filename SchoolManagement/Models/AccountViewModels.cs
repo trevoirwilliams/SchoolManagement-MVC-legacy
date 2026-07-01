@@ -85,7 +85,9 @@ namespace SchoolManagement.Models
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        [Required]
+        // Note: UserRole should not be populated by user input.
+        // Server will reject registrations with a non-empty UserRole.
+        // This property remains for model binding compatibility but is not displayed.
         [Display(Name = "User Role")]
         public string UserRole { get; set; }
 

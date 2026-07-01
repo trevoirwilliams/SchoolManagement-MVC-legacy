@@ -40,3 +40,25 @@ Preserve behavior exactly:
 - Use no selected value when enrollment is null.
 - Replace only the duplicated dropdown setup blocks.
 - Do not edit generated EDMX model files.
+
+## Prompt 3 - Ask AI to Plan a fix for the Feature First
+Review the account registration and role assignment workflow.
+
+Inspect these files:
+- SchoolManagement/Controllers/AccountController.cs
+- SchoolManagement/Models/AccountViewModels.cs
+- SchoolManagement/Views/Account/Register.cshtml
+- docs/business-rules-and-risks.md
+
+Do not modify files yet.
+Generate a plan to implement a fix for all the issues that have been identified, including a timeline and any dependencies.
+
+Return:
+1. Current registration flow
+2. Where role selection enters the request
+3. Where role assignment happens
+4. Why user-selected roles are risky
+5. Minimal rewrite options
+6. Tests that should exist before or after the rewrite
+7. Files likely affected
+
