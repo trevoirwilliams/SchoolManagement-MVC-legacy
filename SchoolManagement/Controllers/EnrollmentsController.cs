@@ -48,9 +48,7 @@ namespace SchoolManagement.Controllers
         // GET: Enrollments/Create
         public ActionResult Create()
         {
-            ViewBag.CourseID = new SelectList(db.Courses, "CourseId", "Title");
-            ViewBag.StudentID = new SelectList(db.Students, "StudentID", "LastName");
-            ViewBag.LecturerId = new SelectList(db.Lecturers, "Id", "First_Name");
+            PopulateDropdowns();
             return View();
         }
 
@@ -68,9 +66,7 @@ namespace SchoolManagement.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.CourseID = new SelectList(db.Courses, "CourseId", "Title", enrollment.CourseID);
-            ViewBag.StudentID = new SelectList(db.Students, "StudentID", "LastName", enrollment.StudentID);
-            ViewBag.LecturerId = new SelectList(db.Lecturers, "Id", "First_Name", enrollment.LecturerId);
+            PopulateDropdowns(enrollment);
             return View(enrollment);
         }
 
@@ -106,9 +102,7 @@ namespace SchoolManagement.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.CourseID = new SelectList(db.Courses, "CourseId", "Title", enrollment.CourseID);
-            ViewBag.StudentID = new SelectList(db.Students, "StudentID", "LastName", enrollment.StudentID);
-            ViewBag.LecturerId = new SelectList(db.Lecturers, "Id", "First_Name", enrollment.LecturerId);
+            PopulateDropdowns(enrollment);
             return View(enrollment);
         }
 
@@ -125,9 +119,7 @@ namespace SchoolManagement.Controllers
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            ViewBag.CourseID = new SelectList(db.Courses, "CourseId", "Title", enrollment.CourseID);
-            ViewBag.StudentID = new SelectList(db.Students, "StudentID", "LastName", enrollment.StudentID);
-            ViewBag.LecturerId = new SelectList(db.Lecturers, "Id", "First_Name", enrollment.LecturerId);
+            PopulateDropdowns(enrollment);
             return View(enrollment);
         }
 
@@ -165,6 +157,21 @@ namespace SchoolManagement.Controllers
                 Id = q.StudentID
             }).Where(q => q.Name.Contains(term));
             return Json(students, JsonRequestBehavior.AllowGet);
+        }
+
+        private void PopulateDropdowns(Enrollment enrollment = null)
+        {
+            if (enrollment == null)
+            {
+                ViewBag.CourseID = new SelectList(db.Courses, "CourseId", "Title");
+                ViewBag.StudentID = new SelectList(db.Students, "StudentID", "LastName");
+                ViewBag.LecturerId = new SelectList(db.Lecturers, "Id", "First_Name");
+                return;
+            }
+
+            ViewBag.CourseID = new SelectList(db.Courses, "CourseId", "Title", enrollment.CourseID);
+            ViewBag.StudentID = new SelectList(db.Students, "StudentID", "LastName", enrollment.StudentID);
+            ViewBag.LecturerId = new SelectList(db.Lecturers, "Id", "First_Name", enrollment.LecturerId);
         }
 
         protected override void Dispose(bool disposing)
