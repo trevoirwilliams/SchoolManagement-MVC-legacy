@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using SchoolManagement.Models;
@@ -17,6 +18,7 @@ namespace SchoolManagement.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationRoleManager _roleManager;
         private ApplicationDbContext context;
 
         public AccountController()
@@ -51,6 +53,18 @@ namespace SchoolManagement.Controllers
             private set
             {
                 _userManager = value;
+            }
+        }
+
+        public ApplicationRoleManager RoleManager
+        {
+            get
+            {
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
+            }
+            private set
+            {
+                _roleManager = value;
             }
         }
 
@@ -141,7 +155,6 @@ namespace SchoolManagement.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
-            ViewBag.Roles = new SelectList(context.Roles.Where(q => !q.Name.Contains("Admin")).ToList(), "Name", "Name");
             return View();
         }
 
@@ -152,13 +165,43 @@ namespace SchoolManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            // Security: Detect and reject any attempt to post a UserRole value
+            if (!string.IsNullOrWhiteSpace(model.UserRole))
+            {
+                ModelState.AddModelError("", "Invalid registration request. Role cannot be specified by user.");
+                return View(model);
+            }
+
             if (ModelState.IsValid)
             {
+                // Ensure the default 'Teacher' role exists; create it if missing
+                const string defaultRole = "Teacher";
+                if (!await RoleManager.RoleExistsAsync(defaultRole))
+                {
+                    var roleResult = await RoleManager.CreateAsync(new IdentityRole(defaultRole));
+                    if (!roleResult.Succeeded)
+                    {
+                        ModelState.AddModelError("", $"Failed to create default role '{defaultRole}'. Please contact support.");
+                        return View(model);
+                    }
+                }
+
                 var user = new ApplicationUser { UserName = model.Username, Email = model.Email, BirthDate = model.BirthDate };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                    // Assign the default role to the new user
+                    var roleAssignmentResult = await UserManager.AddToRoleAsync(user.Id, defaultRole);
+                    if (!roleAssignmentResult.Succeeded)
+                    {
+                        // Role assignment failed; log and inform user
+                        ModelState.AddModelError("", $"User created but role assignment failed. Please contact support.");
+                        AddErrors(roleAssignmentResult);
+                        return View(model);
+                    }
+
+                    // Sign in the user (preserve current behavior)
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
 
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
@@ -166,10 +209,8 @@ namespace SchoolManagement.Controllers
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
-                    await UserManager.AddToRoleAsync(user.Id, model.UserRole);
                     return RedirectToAction("Index", "Home");
                 }
-                ViewBag.Roles = new SelectList(context.Roles.Where(q => !q.Name.Contains("Admin")).ToList(), "Name", "Name");
 
                 AddErrors(result);
             }
@@ -423,6 +464,12 @@ namespace SchoolManagement.Controllers
                 {
                     _signInManager.Dispose();
                     _signInManager = null;
+                }
+
+                if (_roleManager != null)
+                {
+                    _roleManager.Dispose();
+                    _roleManager = null;
                 }
             }
 
